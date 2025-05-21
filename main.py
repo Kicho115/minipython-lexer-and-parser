@@ -18,8 +18,8 @@ def main():
     for token in tokens:
         print(f"Token: {token}")
     
-    print("\n=== Parser Output ===")
     # Parse the tokens
+    print("\n=== Parser Output ===")
     parser = Parser(tokens)
     try:
         ast = parser.parse()
