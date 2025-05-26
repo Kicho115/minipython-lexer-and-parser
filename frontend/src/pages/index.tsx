@@ -32,7 +32,7 @@ export default function Home() {
 
   const handleCompile = async () => {
     try {
-      const response = await fetch("http://localhost:8000/compile", {
+      const response = await fetch(process.env.NEXT_PUBLIC_API_URL + "/compile", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
