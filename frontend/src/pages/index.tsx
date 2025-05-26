@@ -32,17 +32,27 @@ export default function Home() {
 
   const handleCompile = async () => {
     try {
-      const response = await fetch("/api/compile", {
+      const response = await fetch("http://localhost:8000/compile", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ code }),
       });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        setOutput(errorData.detail || "Error: Could not compile code");
+        return;
+      }
+
       const data = await response.json();
-      setOutput(data.output || "No output");
+      
+      // Formatear la salida para mostrar tokens y AST
+      const output = `=== Tokens ===\n${data.tokens.join('\n')}\n\n=== AST ===\n${data.ast}`;
+      setOutput(output);
     } catch (error) {
-      setOutput("Error: Could not compile code");
+      setOutput("Error: Could not connect to the compiler server");
     }
   };
 
@@ -61,7 +71,6 @@ export default function Home() {
             <div className={styles.editorWrapper}>
               <div className={styles.inputHeader}>Input</div>
               <MonacoEditor
-                height="500px"
                 defaultLanguage="python"
                 theme="vs-dark"
                 value={code}
