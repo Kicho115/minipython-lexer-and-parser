@@ -52,6 +52,7 @@ export default function Home() {
       const output = `=== Tokens ===\n${data.tokens.join('\n')}\n\n=== AST ===\n${data.ast}`;
       setOutput(output);
     } catch (error) {
+      console.error("Error:", error);
       setOutput("Error: Could not connect to the compiler server");
     }
   };
