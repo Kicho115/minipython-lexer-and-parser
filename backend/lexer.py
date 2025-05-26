@@ -20,7 +20,7 @@ SYMBOLS = {
     ')': 'RPAREN'
 }
 
-def lexer(code):
+def Lexer(code):
     tokens = []
     lines = code.split('\n')
     indent_stack = [0]
