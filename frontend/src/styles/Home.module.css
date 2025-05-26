@@ -130,6 +130,7 @@
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
   align-self: center;
+  margin-top: 3rem;
 }
 
 .compileButton:hover {
