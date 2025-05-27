@@ -50,9 +50,6 @@ async def compile_code(input: CodeInput):
         # Use the lexer to tokenize the code
         tokens = Lexer(input.code)  # Returns tokens directly
         
-        # Print tokens for debugging
-        print("Tokens:", tokens)
-        
         # Use the parser to analyze the tokens
         parser = Parser(tokens)
         ast = parser.parse()
@@ -60,7 +57,7 @@ async def compile_code(input: CodeInput):
         return {
             "output": str(ast),
             "tokens": [str(token) for token in tokens],
-            "ast": ast.to_tree()  # Use the new to_tree method
+            "ast": ast.to_tree()
         }
     except Exception as e:
         error_msg = format_error_message(e, input.code)

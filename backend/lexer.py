@@ -1,4 +1,3 @@
-# This import is fo
 import re
 
 # List of keywords and symbols

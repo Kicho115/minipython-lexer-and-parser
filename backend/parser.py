@@ -114,7 +114,6 @@ class Parser:
         return NodeFactory.create('while', condition, body)
 
     def parse_expression(self):
-        # Comparaciones como x > 3 o a == b
         left = self.parse_arith_expression()
 
         while self.current()[0] in ('GT', 'LT', 'EQ', 'NEQ', 'GTE', 'LTE'):
