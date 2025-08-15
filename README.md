@@ -4,7 +4,7 @@ A simple lexical and syntax analyzer for a reduced version of Python (MiniPython
 
 ## Live Demo
 
-You can try the application online without running it locally: [https://minipython-lexer-and-parser-flx1.vercel.app/](https://minipython-lexer-and-parser-flx1.vercel.app/)
+You can try the application online without running it locally: [https://minipython-lexer-and-parser-3gdn.vercel.app/](https://minipython-lexer-and-parser-3gdn.vercel.app/)
 
 **Note:** The first time you use the compiler, it may take a moment to start up since we're using the free tier hosting.
 
