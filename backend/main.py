@@ -5,6 +5,7 @@ from lexer import Lexer
 from parser import Parser
 import traceback
 import re
+from transpiler import Transpiler
 
 app = FastAPI(
     title="Mini Python Compiler API",
@@ -53,11 +54,16 @@ async def compile_code(input: CodeInput):
         # Use the parser to analyze the tokens
         parser = Parser(tokens)
         ast = parser.parse()
+
+        # Transpile AST to JavaScript
+        transpiler = Transpiler(ast)
+        js_code = transpiler.transpile()
         
         return {
             "output": str(ast),
             "tokens": [str(token) for token in tokens],
-            "ast": ast.to_tree()
+            "ast": ast.to_tree(),
+            "js": js_code
         }
     except Exception as e:
         error_msg = format_error_message(e, input.code)
