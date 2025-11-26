@@ -15,10 +15,9 @@ const geistMono = Geist_Mono({
 });
 
 // Dynamically import Monaco Editor to avoid SSR issues
-const MonacoEditor = dynamic(
-  () => import("@monaco-editor/react"),
-  { ssr: false }
-);
+const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
+  ssr: false,
+});
 
 export default function Home() {
   const [code, setCode] = useState("# Write your code here...");
@@ -32,14 +31,17 @@ export default function Home() {
 
   const handleCompile = async () => {
     try {
-      const response = await fetch(process.env.NEXT_PUBLIC_API_URL + "/compile", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ code }),
-      });
-      
+      const response = await fetch(
+        process.env.NEXT_PUBLIC_API_URL + "/compile",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ code }),
+        }
+      );
+
       if (!response.ok) {
         const errorData = await response.json();
         setOutput(errorData.detail || "Error: Could not compile code");
@@ -47,9 +49,37 @@ export default function Home() {
       }
 
       const data = await response.json();
-      
+
+      // Capturar salida de console.log para mostrarla
+      let jsOutput = "";
+      const originalLog = console.log;
+      const logs: string[] = [];
+
+      console.log = (...args) => {
+        logs.push(args.map(String).join(" "));
+      };
+
+      try {
+        const result = eval(data.js);
+        if (logs.length > 0) {
+          jsOutput = logs.join("\n");
+        } else if (result !== undefined) {
+          jsOutput = String(result);
+        } else {
+          jsOutput = "No output";
+        }
+      } catch (e) {
+        jsOutput = `Error executing JavaScript: ${e}`;
+      } finally {
+        console.log = originalLog;
+      }
+
       // Formatear la salida para mostrar tokens y AST
-      const output = `=== Tokens ===\n${data.tokens.join('\n')}\n\n=== AST ===\n${data.ast}`;
+      const output = `=== Tokens ===\n${data.tokens.join(
+        "\n"
+      )}\n\n=== AST ===\n${data.ast}\n
+      \n=== JavaScript ===\n${data.js}
+      \n=== JavaScript Output ===\n${jsOutput}`;
       setOutput(output);
     } catch (error) {
       console.error("Error:", error);
@@ -61,11 +91,16 @@ export default function Home() {
     <>
       <Head>
         <title>Mini Python Compiler</title>
-        <meta name="description" content="A mini Python compiler with lexer and parser" />
+        <meta
+          name="description"
+          content="A mini Python compiler with lexer and parser"
+        />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <div className={`${styles.page} ${geistSans.variable} ${geistMono.variable}`}>
+      <div
+        className={`${styles.page} ${geistSans.variable} ${geistMono.variable}`}
+      >
         <main className={styles.main}>
           <h1 className={styles.title}>Mini Python Compiler</h1>
           <div className={styles.editorContainer}>
