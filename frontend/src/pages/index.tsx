@@ -21,7 +21,11 @@ const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
 
 export default function Home() {
   const [code, setCode] = useState("# Write your code here...");
-  const [output, setOutput] = useState("");
+  const [tokens, setTokens] = useState<string[]>([]);
+  const [ast, setAst] = useState<string>("");
+  const [jsCode, setJsCode] = useState<string>("");
+  const [executionOutput, setExecutionOutput] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleEditorChange = (value: string | undefined) => {
     if (value !== undefined) {
@@ -29,7 +33,37 @@ export default function Home() {
     }
   };
 
+  const executeJavaScript = (code: string) => {
+    try {
+      // Capturar console.log
+      const logs: string[] = [];
+      const originalLog = console.log;
+
+      console.log = (...args: any[]) => {
+        logs.push(args.map((arg) => String(arg)).join(" "));
+      };
+
+      // Ejecutar código
+      // eslint-disable-next-line no-eval
+      const result = eval(code);
+
+      // Restaurar console.log
+      console.log = originalLog;
+
+      if (logs.length > 0) {
+        setExecutionOutput(logs.join("\n"));
+      } else if (result !== undefined) {
+        setExecutionOutput(String(result));
+      } else {
+        setExecutionOutput("✓ Execution completed successfully (no output)");
+      }
+    } catch (error) {
+      setExecutionOutput(`❌ Error: ${error}`);
+    }
+  };
+
   const handleCompile = async () => {
+    setIsLoading(true);
     try {
       const response = await fetch(
         process.env.NEXT_PUBLIC_API_URL + "/compile",
@@ -44,46 +78,32 @@ export default function Home() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        setOutput(errorData.detail || "Error: Could not compile code");
+        setExecutionOutput(errorData.detail || "Error: Could not compile code");
+        setTokens([]);
+        setAst("");
+        setJsCode("");
         return;
       }
 
       const data = await response.json();
 
-      // Capturar salida de console.log para mostrarla
-      let jsOutput = "";
-      const originalLog = console.log;
-      const logs: string[] = [];
+      // Actualizar estados
+      setTokens(data.tokens || []);
+      setAst(data.ast || "No AST generated");
+      setJsCode(data.javascript || data.js || "No JavaScript generated");
 
-      console.log = (...args) => {
-        logs.push(args.map(String).join(" "));
-      };
-
-      try {
-        const result = eval(data.js);
-        if (logs.length > 0) {
-          jsOutput = logs.join("\n");
-        } else if (result !== undefined) {
-          jsOutput = String(result);
-        } else {
-          jsOutput = "No output";
-        }
-      } catch (e) {
-        jsOutput = `Error executing JavaScript: ${e}`;
-      } finally {
-        console.log = originalLog;
+      // Ejecutar automáticamente el código JavaScript
+      if (data.javascript || data.js) {
+        executeJavaScript(data.javascript || data.js);
       }
-
-      // Formatear la salida para mostrar tokens y AST
-      const output = `=== Tokens ===\n${data.tokens.join(
-        "\n"
-      )}\n\n=== AST ===\n${data.ast}\n
-      \n=== JavaScript ===\n${data.js}
-      \n=== JavaScript Output ===\n${jsOutput}`;
-      setOutput(output);
     } catch (error) {
       console.error("Error:", error);
-      setOutput("Error: Could not connect to the compiler server");
+      setExecutionOutput("Error: Could not connect to the compiler server");
+      setTokens([]);
+      setAst("");
+      setJsCode("");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -102,17 +122,22 @@ export default function Home() {
         className={`${styles.page} ${geistSans.variable} ${geistMono.variable}`}
       >
         <main className={styles.main}>
-          <h1 className={styles.title}>Mini Python Compiler</h1>
-          <div className={styles.editorContainer}>
+          <h1 className={styles.title}>🐍 Intérprete Web Python a JavaScript</h1>
+
+          {/* Editor de Python - Arriba */}
+          <div className={styles.editorSection}>
+            <div className={styles.sectionHeader}>
+              <span className={styles.headerIcon}></span>
+              Python Code
+            </div>
             <div className={styles.editorWrapper}>
-              <div className={styles.inputHeader}>Input</div>
               <MonacoEditor
                 defaultLanguage="python"
                 theme="vs-dark"
                 value={code}
                 onChange={handleEditorChange}
                 options={{
-                  minimap: { enabled: true },
+                  minimap: { enabled: false },
                   fontSize: 14,
                   lineNumbers: "on",
                   roundedSelection: false,
@@ -121,14 +146,65 @@ export default function Home() {
                 }}
               />
             </div>
-            <div className={styles.outputWrapper}>
-              <div className={styles.outputHeader}>Output</div>
-              <pre className={styles.output}>{output}</pre>
+          </div>
+
+          {/* Secciones de output - Abajo en grid de 3 columnas */}
+          <div className={styles.outputGrid}>
+            {/* Tokens */}
+            <div className={styles.section}>
+              <div className={styles.sectionHeader}>
+                <span className={styles.headerIcon}></span>
+                Tokens
+              </div>
+              <pre className={styles.sectionContent}>
+                {tokens.length > 0
+                  ? tokens.join("\n")
+                  : "No tokens generados aún..."}
+              </pre>
+            </div>
+
+            {/* AST */}
+            <div className={styles.section}>
+              <div className={styles.sectionHeader}>
+                <span className={styles.headerIcon}></span>
+                AST (Abstract Syntax Tree)
+              </div>
+              <pre className={styles.sectionContent}>
+                {ast || "No AST generado aún..."}
+              </pre>
+            </div>
+
+            {/* JavaScript Code */}
+            <div className={styles.section}>
+              <div className={styles.sectionHeader}>
+                <span className={styles.headerIcon}></span>
+                JavaScript Code
+              </div>
+              <pre className={styles.sectionContent}>
+                {jsCode || "No código JavaScript generado aún..."}
+              </pre>
             </div>
           </div>
-          <button className={styles.compileButton} onClick={handleCompile}>
-            Compile & Run
+
+          {/* Botón Compile & Run */}
+          <button
+            className={styles.compileButton}
+            onClick={handleCompile}
+            disabled={isLoading}
+          >
+            {isLoading ? "Compilando..." : "Compilar y Ejecutar"}
           </button>
+
+          {/* Output de Ejecución */}
+          <div className={styles.executionSection}>
+            <div className={styles.sectionHeader}>
+              <span className={styles.headerIcon}></span>
+              Resultado de la Ejecución
+            </div>
+            <pre className={styles.executionOutput}>
+              {executionOutput || "Click 'Compilar y Ejecutar' para ver el resultado..."}
+            </pre>
+          </div>
         </main>
       </div>
     </>

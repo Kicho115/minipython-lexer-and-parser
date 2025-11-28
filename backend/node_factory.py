@@ -1,6 +1,7 @@
 from ast_nodes import (
     ASTNode, NumberNode, StringNode, BooleanNode, IdentifierNode,
-    BinOpNode, AssignNode, PrintNode, IfNode, WhileNode, BlockNode
+    BinOpNode, AssignNode, PrintNode, IfNode, WhileNode, BlockNode,
+    ForNode, RangeNode, FunctionDefNode, FunctionCallNode, ReturnNode
 )
 
 class NodeFactory:
@@ -21,7 +22,12 @@ class NodeFactory:
             'print': lambda value: PrintNode(value),
             'if': lambda condition, body, else_body=None: IfNode(condition, body, else_body),
             'while': lambda condition, body: WhileNode(condition, body),
-            'block': lambda statements: BlockNode(statements)
+            'block': lambda statements: BlockNode(statements),
+            'for': lambda variable, iterable, body: ForNode(variable, iterable, body),
+            'range': lambda start, stop, step=None: RangeNode(start, stop, step),
+            'function_def': lambda name, params, body: FunctionDefNode(name, params, body),
+            'function_call': lambda name, args: FunctionCallNode(name, args),
+            'return': lambda value=None: ReturnNode(value)
         }
 
         if node_type not in node_creators:

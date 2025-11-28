@@ -1,7 +1,19 @@
 import re
 
 # List of keywords and symbols
-KEYWORDS = {'if': 'IF', 'while': 'WHILE', 'print': 'PRINT', 'True': 'TRUE', 'False': 'FALSE' , 'else' : 'ELSE'}
+KEYWORDS = {
+    'if': 'IF', 
+    'while': 'WHILE', 
+    'print': 'PRINT', 
+    'True': 'TRUE', 
+    'False': 'FALSE', 
+    'else': 'ELSE',
+    'for': 'FOR',
+    'in': 'IN',
+    'range': 'RANGE',
+    'def': 'DEF',
+    'return': 'RETURN'
+}
 SYMBOLS = {
     '=': 'ASSIGN',
     '+': 'PLUS',
@@ -16,7 +28,8 @@ SYMBOLS = {
     '<=': 'LTE',
     ':': 'COLON',
     '(': 'LPAREN',
-    ')': 'RPAREN'
+    ')': 'RPAREN',
+    ',': 'COMMA'
 }
 
 def Lexer(code):

@@ -63,7 +63,7 @@ async def compile_code(input: CodeInput):
             "output": str(ast),
             "tokens": [str(token) for token in tokens],
             "ast": ast.to_tree(),
-            "js": js_code
+            "javascript": js_code
         }
     except Exception as e:
         error_msg = format_error_message(e, input.code)
